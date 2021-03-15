@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block head %}{% endblock %}
+
+{% block body %}
+<h1>Advanced Options</h1>
+
+<form action="/options" method="POST">
+
+<h1>MySQL</h1>
+
+<h3>General</h3>
+<input type="checkbox" name="option" value="vuln-scan">
+<label>Include nmap vuln scan</label><br>
+
+<h3>Login Information</h3>
+	<label>Username:</label>
+	<input type="text" name="mysql-user"><br>
+	<label>Password:</label>
+	<input type="text" name="mysql-pass"><br>
+	<input type="submit" value="Apply">
+</form>
+{% endblock %}

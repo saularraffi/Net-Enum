@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block head %}{% endblock %}
+
+{% block body %}
+<form action="/" method="POST">
+	<label>Target IP:</label>
+	<input type="text" name="target-ip" placeholder="10.0.0.1"><br>
+	<label>Port Range:</label>
+	<input type="text" name="port-range" placeholder="1-1024"><br>
+	<input type="submit" value="Scan">
+</form>
+
+<a href="/options">Advanced options</a><br>
+<a href="/reports">View reports</a>
+{% endblock %}

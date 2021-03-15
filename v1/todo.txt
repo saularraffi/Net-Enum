@@ -1,0 +1,6 @@
+- add share mounting for nfs
+- add file browsing for smb mounted shares
+- add error handling
+- implement http spider
+- add data retrieval (db and table names) for mysql 
+- add banner grab for mysql
