@@ -2,6 +2,8 @@ import requests
 import time
 from threading import Thread
 from api.nmap import NmapScan
+import socket
+import json
 
 class WebEnum():
     def __init__(self, host, port=80, dirBrutewordlist='/usr/share/wordlists/dirb/common.txt'):
@@ -32,6 +34,17 @@ class WebEnum():
         nmap = NmapScan(self.host)
         return nmap.enumPort(self.port, ['http-enum.nse'])
 
+    def spider(self, depth=1):
+        print("Spidering website")
+
+    def bannerGrab(self):
+        s = socket.socket()
+        s.connect((self.host, self.port))
+        s.send(b'GET /\n\n')
+        banner = s.recv(10000).decode('utf-8')
+        return json.dumps({'banner': banner})
+
     def scan(self):
         # return self.dirBrute()
-        return self.nmapEnum()
+        # return self.nmapEnum()
+        return self.bannerGrab()
