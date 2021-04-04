@@ -3,10 +3,16 @@ import time
 from threading import Thread
 from api.nmap import NmapScan
 import socket
+import jsonmerge
 import json
+from jsonmerge import Merger
 
 class WebEnum():
-    def __init__(self, host, port=80, dirBrutewordlist='/usr/share/wordlists/dirb/common.txt'):
+    def __init__(self, host, port=80, nmapScripts=None, dirBrutewordlist='/usr/share/wordlists/dirb/common.txt'):
+        if nmapScripts is None:
+            self.nmapScripts = ['http-enum.nse, http-methods.nse']
+        else:
+            self.nmapScripts = nmapScripts
         self.host = host
         self.port = port
         self.dirBrutewordlist = dirBrutewordlist
@@ -26,13 +32,14 @@ class WebEnum():
             t = Thread(target=self._dirBrute, args=(dir,))
             t.daemon = True
             t.start()
-            time.sleep(0.05)
+            time.sleep(0.01)
 
-        return self.directories
+        return {'directories': self.directories}
 
-    def nmapEnum(self):
+    def runNmapScripts(self):
         nmap = NmapScan(self.host)
-        return nmap.enumPort(self.port, ['http-enum.nse'])
+        scriptResults = nmap.enumPort(self.port, self.nmapScripts)[self.host]['ports'][0]['scripts']
+        return {'nmapScripts': scriptResults}
 
     def spider(self, depth=1):
         print("Spidering website")
@@ -42,9 +49,30 @@ class WebEnum():
         s.connect((self.host, self.port))
         s.send(b'GET /\n\n')
         banner = s.recv(10000).decode('utf-8')
-        return json.dumps({'banner': banner})
+        return {'banner': banner}
 
     def scan(self):
-        # return self.dirBrute()
-        # return self.nmapEnum()
-        return self.bannerGrab()
+        # bruteResuts = self.dirBrute()
+        # nmapScriptResults = self.runNmapScripts()
+        # bannerGrabResults = self.bannerGrab()
+
+        schema = {
+            'properties': {
+                'items': {
+                    'type': 'objects'
+                }
+            }
+        }
+
+        merger = Merger(schema)
+
+        bruteResuts = {'bla1': 'bla1'}
+        nmapScriptResults = {'bla2': 'bla2'}
+        bannerGrabResults = {'bla3': 'bla3'}
+
+        results = None
+        results = merger.merge(results, bruteResuts)
+        results = merger.merge(results, nmapScriptResults)
+        results = merger.merge(results, bannerGrabResults)
+
+        return {self.port, json.dumps(results)}

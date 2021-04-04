@@ -2,21 +2,29 @@ import _thread
 import time
 from threading import Thread
 import requests
+import jsonmerge
+from jsonmerge import Merger
 
 host = "10.10.71.51"
 
-dirs = open('/usr/share/wordlists/dirb/common.txt', 'r').readlines()
+schema = {
+    'properties': {
+        'items': {
+            'type': 'objects'
+        }
+    }
+}
 
-def checkStatus(dir):
-    url = "http://{}:3333/{}".format(host,dir)
-    res = requests.get(url)
-    # print(url)
-    if res.status_code != 404:
-        print(dir, res.status_code)
+merger = Merger(schema)
 
-for dir in dirs:
-    dir = dir.strip()
-    t = Thread(target=checkStatus, args=(dir,))
-    t.daemon = True
-    t.start()
-    time.sleep(0.05)
+j1 = {'bla1': 'bla1'}
+j2 = {'bla2': 'bla2'}
+j3 = {'bla3': 'bla3'}
+
+base = None
+base = merger.merge(base, j1)
+base = merger.merge(base, j2)
+base = merger.merge(base, j3)
+
+print(base)
+

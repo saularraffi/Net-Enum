@@ -13,7 +13,8 @@ class NmapScan():
         return self.nmap.scan_top_ports(target=self.host)
 
     def enumPort(self, port, scripts):
-        return self.nmap.scan_top_ports(target=self.host, args='-p {} --script={}'.format(port, ','.join(scripts)))
+        return self.nmap.scan_top_ports(target=self.host, args='-p {} --script={}'
+                                        .format(port, ','.join(scripts).replace(' ', '')))
 
     def scan(self):
         return self.quickScan()
