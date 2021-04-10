@@ -9,7 +9,8 @@ from jsonmerge import Merger
 from termcolor import colored
 
 class WebScanner():
-    def __init__(self, host='127.0.0.1', port=80, nmapScripts=None, dirBrutewordlist='/usr/share/wordlists/dirb/common.txt'):
+    def __init__(self, host='127.0.0.1', port=80, nmapScripts=None,
+                 dirBrutewordlist='/usr/share/wordlists/dirb/common.txt', disablePing=False):
         print(colored("[+] Starting web scanner...", 'green'))
         if nmapScripts is None:
             self.nmapScripts = ['http-enum.nse', 'http-methods.nse']
@@ -19,6 +20,7 @@ class WebScanner():
         self.port = port
         self.dirBrutewordlist = dirBrutewordlist
         self.directories = {}
+        self.disablePing = disablePing
 
     def _dirBrute(self, dir):
         url = "http://{}:{}/{}".format(self.host, self.port, dir)
@@ -41,7 +43,7 @@ class WebScanner():
 
     def runNmapScripts(self):
         print(colored("\t[+] Running http nmap scripts...", 'green'))
-        nmap = NmapScan(self.host)
+        nmap = NmapScan(host=self.host, disablePing=self.disablePing)
         scriptResults = nmap.enumPort(self.port, self.nmapScripts)[self.host]['ports'][0]['scripts']
         return {'nmapScripts': scriptResults}
 

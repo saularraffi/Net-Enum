@@ -5,14 +5,15 @@ from api.nmap import NmapScan
 from jsonmerge import Merger
 
 class FtpScanner():
-    def __init__(self, host='127.0.0.1', port=21, ftpScripts=None):
+    def __init__(self, host='127.0.0.1', port=21, nmapScripts=None, disablePing=False):
         print(colored("[+] Starting ftp scanner...", 'green'))
-        if ftpScripts is None:
+        if nmapScripts is None:
             self.nmapScripts = ['ftp-anon.nse']
         else:
-            self.nmapScripts = ftpScripts
+            self.nmapScripts = nmapScripts
         self.host = host
         self.port = port
+        self.disablePing = disablePing
 
     def bannerGrab(self):
         print(colored("\t[+] Grabbing ftp banner...", 'green'))
@@ -32,7 +33,7 @@ class FtpScanner():
 
     def runNmapScripts(self):
         print(colored("\t[+] Running http nmap scripts...", 'green'))
-        nmap = NmapScan(self.host)
+        nmap = NmapScan(host=self.host, disablePing=self.disablePing)
         scriptResults = nmap.enumPort(self.port, self.nmapScripts)[self.host]['ports'][0]['scripts']
         return {'nmapScripts': scriptResults}
 
