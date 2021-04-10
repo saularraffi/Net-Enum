@@ -1,16 +1,19 @@
-import requests
-import time
 from threading import Thread
 from api.nmap import NmapScan
+from jsonmerge import Merger
+from termcolor import colored
+from lxml import html, etree
 import socket
 import jsonmerge
 import json
-from jsonmerge import Merger
-from termcolor import colored
+import requests
+import time
+from bs4 import BeautifulSoup, Comment
+
 
 class WebScanner():
     def __init__(self, host='127.0.0.1', port=80, nmapScripts=None,
-                 dirBrutewordlist='/usr/share/wordlists/dirb/common.txt', disablePing=False):
+                 dirBrutewordlist='/usr/share/wordlists/dirb/common.txt', disablePing=False, spiderDepth=2):
         print(colored("[+] Starting web scanner...", 'green'))
         if nmapScripts is None:
             self.nmapScripts = ['http-enum.nse', 'http-methods.nse']
@@ -21,6 +24,7 @@ class WebScanner():
         self.dirBrutewordlist = dirBrutewordlist
         self.directories = {}
         self.disablePing = disablePing
+        self.spiderDepth = spiderDepth
 
     def _dirBrute(self, dir):
         url = "http://{}:{}/{}".format(self.host, self.port, dir)
@@ -47,8 +51,35 @@ class WebScanner():
         scriptResults = nmap.enumPort(self.port, self.nmapScripts)[self.host]['ports'][0]['scripts']
         return {'nmapScripts': scriptResults}
 
-    def spider(self, depth=1):
+    def spider(self):
         print(colored("\t[+] Spidering website...", 'green'))
+
+        depth = 0
+        links = ['/']
+
+        while depth < self.spiderDepth:
+            for link in links:
+                url = 'http://{}:{}/{}'.format(self.host, self.port, link)
+                res = requests.get(url)
+                webpage = html.fromstring(res.content.decode('utf-8'))
+                newLinks = webpage.xpath('//a/@href')
+                links.extend(newLinks)
+                links = list(dict.fromkeys(links))
+            depth = depth + 1
+
+        return {'spider': links}
+
+    def getHtmlComments(self):
+        print(colored("\t[+] Extracting html comments...", 'green'))
+        comments = []
+        url = 'http://{}:{}'.format(self.host, self.port)
+        res = requests.get(url)
+        soup = BeautifulSoup(res.content.decode('utf-8'), 'lxml')
+
+        for comment in soup.findAll(text=lambda text: isinstance(text, Comment)):
+            comments.append(comment)
+
+        return {'html_comments': comments}
 
     def bannerGrab(self):
         print(colored("\t[+] Grabbing http banner...", 'green'))
@@ -66,6 +97,8 @@ class WebScanner():
         bruteResults = self.dirBrute()
         nmapScriptResults = self.runNmapScripts()
         bannerGrabResults = self.bannerGrab()
+        spiderResults = self.spider()
+        htmlCommentResults = self.getHtmlComments()
 
         schema = {'properties': {'items': {'type': 'objects'}}}
 
@@ -75,5 +108,7 @@ class WebScanner():
         results = merger.merge(results, bruteResults)
         results = merger.merge(results, nmapScriptResults)
         results = merger.merge(results, bannerGrabResults)
+        results = merger.merge(results, spiderResults)
+        results = merger.merge(results, htmlCommentResults)
 
         return {self.port: results}
