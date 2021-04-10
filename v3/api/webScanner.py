@@ -6,12 +6,13 @@ import socket
 import jsonmerge
 import json
 from jsonmerge import Merger
+from termcolor import colored
 
-class WebEnum():
-    def __init__(self, host, port=80, nmapScripts=None, dirBrutewordlist='/usr/share/wordlists/dirb/common.txt'):
-        print("[+] Starting web scanner...")
+class WebScanner():
+    def __init__(self, host='127.0.0.1', port=80, nmapScripts=None, dirBrutewordlist='/usr/share/wordlists/dirb/common.txt'):
+        print(colored("[+] Starting web scanner...", 'green'))
         if nmapScripts is None:
-            self.nmapScripts = ['http-enum.nse, http-methods.nse']
+            self.nmapScripts = ['http-enum.nse', 'http-methods.nse']
         else:
             self.nmapScripts = nmapScripts
         self.host = host
@@ -26,7 +27,7 @@ class WebEnum():
             self.directories['/' + dir.strip()] = res.status_code
 
     def dirBrute(self):
-        print("\t[+] Brute forcing web directories...")
+        print(colored("\t[+] Brute forcing web directories...", 'green'))
         dirs = open(self.dirBrutewordlist, 'r')
 
         for dir in dirs:
@@ -39,21 +40,25 @@ class WebEnum():
         return {'directories': self.directories}
 
     def runNmapScripts(self):
-        print("\t[+] Running http nmap scripts...")
+        print(colored("\t[+] Running http nmap scripts...", 'green'))
         nmap = NmapScan(self.host)
         scriptResults = nmap.enumPort(self.port, self.nmapScripts)[self.host]['ports'][0]['scripts']
         return {'nmapScripts': scriptResults}
 
     def spider(self, depth=1):
-        print("Spidering website")
+        print(colored("\t[+] Spidering website...", 'green'))
 
     def bannerGrab(self):
-        print("\t[+] Grabbing http banner...")
-        s = socket.socket()
-        s.connect((self.host, self.port))
-        s.send(b'GET /\n\n')
-        banner = s.recv(10000).decode('utf-8')
-        return {'banner': banner}
+        print(colored("\t[+] Grabbing http banner...", 'green'))
+        try:
+            s = socket.socket()
+            s.connect((self.host, self.port))
+            s.send(b'GET /\n\n')
+            banner = s.recv(10000).decode('utf-8')
+            return {'banner': banner}
+        except:
+            print('\t\t[-] Nework error with grabbing http banner', 'red')
+            return None
 
     def scan(self):
         bruteResults = self.dirBrute()
