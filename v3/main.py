@@ -3,7 +3,7 @@ from api.nmap import NmapScan
 import json
 import jsonmerge
 
-host = "10.10.10.233"
+host = "10.10.10.5"
 
 # nmap = NmapScan(host=host)
 # nmapResult = nmap.scan()
@@ -11,4 +11,3 @@ host = "10.10.10.233"
 
 webResults = WebEnum(host=host, port=80)
 print(json.dumps(webResults.scan(), indent=4))
-# print(webResults.scan())

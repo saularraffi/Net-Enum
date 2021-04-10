@@ -2,7 +2,7 @@ from nmap3 import Nmap
 
 class NmapScan():
     def __init__(self, host):
-        print("Starting nmap scan...")
+        # print("[+] Starting nmap scan...")
         self.host = host
         self.nmap = Nmap()
 

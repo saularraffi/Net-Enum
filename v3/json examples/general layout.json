@@ -1,0 +1,19 @@
+{
+  "target": "10.10.10.5",
+  "initial_nmap": {
+    "bla": "bla"
+  },
+  "port_enumeration_results": [
+    {
+      "80": {
+        "enum1": "enum1",
+        "enum2": "enum2"
+      },
+      "21": {
+        "enum1": "enum1",
+        "enum2": "enum2"
+      }
+    }
+  ]
+}
+
